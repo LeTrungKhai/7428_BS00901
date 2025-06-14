@@ -1,6 +1,6 @@
 import streamlit as st
 import chess
-from st_chess import st_chess
+from stchess import st_chess
 
 st.set_page_config(page_title="♟️ Cờ vua AI", layout="centered")
 st.title("♟️ Chơi cờ vua với AI")
