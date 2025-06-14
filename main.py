@@ -1,30 +1,38 @@
 import streamlit as st
 import chess
-from stchess import board
-
+import chess.svg
 import random
+import base64
 
 st.set_page_config(page_title="♟️ Cờ vua AI", layout="centered")
-st.title("♟️ Chơi cờ vua AI với giao diện click")
+st.title("♟️ Click chọn + Nhập UCI — tạm thay thế")
 
-# Khởi tạo bàn cờ và trạng thái game
 if "board" not in st.session_state:
     st.session_state.board = chess.Board()
 
-# Hiển thị bàn cờ và lấy nước đi người chơi
-move = board(fen=st.session_state.board.fen(), key="chessboard")
+def render_board(board):
+    svg = chess.svg.board(board=board, size=400)
+    b64 = base64.b64encode(svg.encode("utf-8")).decode()
+    st.image(f"data:image/svg+xml;base64,{b64}", use_column_width=True)
 
-if move:
-    st.session_state.board.push(chess.Move.from_uci(move))
-    # Nếu chưa kết thúc lượt người, AI phản công
-    if not st.session_state.board.is_game_over():
-        ai_move = random.choice(list(st.session_state.board.legal_moves))
-        st.session_state.board.push(ai_move)
+render_board(st.session_state.board)
 
-# Thông báo kết quả nếu game đã kết thúc
+uci = st.text_input("Nhập nước đi (UCI), ví dụ e2e4:")
+if st.button("Đánh"):
+    try:
+        move = chess.Move.from_uci(uci)
+        if move in st.session_state.board.legal_moves:
+            st.session_state.board.push(move)
+            if not st.session_state.board.is_game_over():
+                ai_move = random.choice(list(st.session_state.board.legal_moves))
+                st.session_state.board.push(ai_move)
+        else:
+            st.error("❌ Nước đi không hợp lệ.")
+    except:
+        st.error("⚠️ Sai định dạng UCI.")
+
 if st.session_state.board.is_game_over():
-    st.markdown("### 🏁 Ván cờ đã kết thúc!")
-    st.write("Kết quả:", st.session_state.board.result())
+    st.success("🎯 Ván cờ kết thúc: " + st.session_state.board.result())
     if st.button("🔁 Chơi lại"):
         st.session_state.board = chess.Board()
         st.experimental_rerun()
