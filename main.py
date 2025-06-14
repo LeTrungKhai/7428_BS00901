@@ -15,7 +15,7 @@ st.markdown(
 import pandas as pd
 import numpy as np
 
-st.title("📊 Biểu đồ dữ liệu ngẫu nhiên")
+st.title("📊 Random data chart")
 data = pd.DataFrame(np.random.randn(20, 3), columns=["A", "B", "C"])
 st.line_chart(data)
 
@@ -23,9 +23,9 @@ from PIL import Image
 import requests
 from io import BytesIO
 
-st.title("🖼️ Hiển thị ảnh từ Internet")
+st.title("🖼️ Show picture from Internet")
 
-url = st.text_input("Nhập URL ảnh:")
+url = st.text_input("Enter image URL:")
 if url:
     try:
         response = requests.get(url)
