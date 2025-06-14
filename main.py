@@ -67,9 +67,18 @@ st.markdown("---")
 st.header("🎨 Tuỳ chỉnh giao diện")
 bg_color = st.color_picker("Chọn màu nền bạn thích", "#FFFFFF")
 st.markdown(
-    f"<style>body {{ background-color: {bg_color}; }}</style>",
+    f"""
+    <style>
+    div[data-testid="stApp"] {{
+        background-color: {bg_color};
+        padding: 20px;
+        border-radius: 10px;
+    }}
+    </style>
+    """,
     unsafe_allow_html=True
 )
+
 
 # ------------------ GHI CHÚ / PHẢN HỒI ------------------
 st.markdown("---")
