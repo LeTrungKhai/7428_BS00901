@@ -18,3 +18,18 @@ import numpy as np
 st.title("📊 Biểu đồ dữ liệu ngẫu nhiên")
 data = pd.DataFrame(np.random.randn(20, 3), columns=["A", "B", "C"])
 st.line_chart(data)
+
+from PIL import Image
+import requests
+from io import BytesIO
+
+st.title("🖼️ Hiển thị ảnh từ Internet")
+
+url = st.text_input("Nhập URL ảnh:")
+if url:
+    try:
+        response = requests.get(url)
+        img = Image.open(BytesIO(response.content))
+        st.image(img, caption="Ảnh bạn vừa nhập", use_column_width=True)
+    except:
+        st.error("URL không hợp lệ hoặc không phải ảnh.")
