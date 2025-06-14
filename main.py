@@ -3,7 +3,7 @@ st.title("👋 Xin chào!")
 name = st.text_input("Nhập tên của bạn:")
 if name:
     st.success(f"Chào {name}, chúc bạn một ngày tốt lành!")
-st.title("🎨 Đổi màu nền trang")
+st.title("🎨 Edit color")
 r = st.slider("Red", 0, 255, 128)
 g = st.slider("Green", 0, 255, 128)
 b = st.slider("Blue", 0, 255, 128)
