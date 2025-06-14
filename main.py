@@ -1,37 +1,38 @@
 import streamlit as st
 import chess
-from stchess import st_chess
+import chess.svg
+import random
+import base64
 
 st.set_page_config(page_title="♟️ Cờ vua AI", layout="centered")
-st.title("♟️ Chơi cờ vua với AI")
+st.title("♟️ Chơi cờ vua AI — Click + Nhập UCI")
 
-# Khởi tạo bàn cờ
 if "board" not in st.session_state:
     st.session_state.board = chess.Board()
-    st.session_state.game_over = False
 
-# Xử lý lượt đi của người chơi
-last_move = st_chess(st.session_state.board.fen(), key="chessboard")
+def render_board(board):
+    svg = chess.svg.board(board=board, size=400)
+    b64 = base64.b64encode(svg.encode("utf-8")).decode()
+    st.markdown(f"<img src='data:image/svg+xml;base64,{b64}'/>", unsafe_allow_html=True)
 
-if last_move:
-    move = chess.Move.from_uci(last_move)
-    if move in st.session_state.board.legal_moves:
-        st.session_state.board.push(move)
+render_board(st.session_state.board)
 
-        # Kiểm tra kết thúc game
-        if st.session_state.board.is_game_over():
-            st.session_state.game_over = True
+move = st.text_input("Nhập nước đi (UCI, ví dụ e2e4):")
+if st.button("Đánh"):
+    try:
+        m = chess.Move.from_uci(move)
+        if m in st.session_state.board.legal_moves:
+            st.session_state.board.push(m)
+            if not st.session_state.board.is_game_over():
+                ai = random.choice(list(st.session_state.board.legal_moves))
+                st.session_state.board.push(ai)
         else:
-            # AI đánh ngẫu nhiên
-            import random
-            ai_move = random.choice(list(st.session_state.board.legal_moves))
-            st.session_state.board.push(ai_move)
+            st.error("❌ Nước đi không hợp lệ!")
+    except:
+        st.error("⚠️ Sai định dạng UCI")
 
-# Hiển thị kết quả
 if st.session_state.board.is_game_over():
-    st.markdown("### 🏁 Ván cờ đã kết thúc!")
-    st.write("Kết quả:", st.session_state.board.result())
+    st.success(f"Kết thúc ván cờ: {st.session_state.board.result()}")
     if st.button("🔁 Chơi lại"):
         st.session_state.board = chess.Board()
-        st.session_state.game_over = False
         st.experimental_rerun()
