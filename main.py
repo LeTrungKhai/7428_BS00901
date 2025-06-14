@@ -33,3 +33,14 @@ if url:
         st.image(img, caption="Ảnh bạn vừa nhập", use_column_width=True)
     except:
         st.error("URL không hợp lệ hoặc không phải ảnh.")
+
+st.title("🗳️ Khảo sát nhỏ")
+st.subheader("Bạn thích ngôn ngữ lập trình nào nhất?")
+
+option = st.radio(
+    "Chọn một:",
+    ("Python", "Java", "C++", "JavaScript")
+)
+
+if st.button("Gửi"):
+    st.success(f"Bạn đã chọn: {option}")
