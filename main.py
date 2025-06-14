@@ -1,91 +1,86 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-import requests
-from PIL import Image
-from io import BytesIO
+import random
+import time
 
-# Cấu hình giao diện trang
-st.set_page_config(page_title="Trang Web Cá Nhân", layout="centered")
+# Cấu hình trang
+st.set_page_config(page_title="🎮 Game Đoán Số", layout="centered")
 
-# -------------------- TRANG GIỚI THIỆU --------------------
-st.title("👨‍💻 Xin chào, tôi là Khải Lê!")
-st.subheader("📍 Vị trí: TP.HCM, Việt Nam")
-st.write("Tôi là một nhà phát triển phần mềm đam mê công nghệ, thích học hỏi và chia sẻ.")
+# ------------------ INIT SESSION ------------------
+if 'secret_number' not in st.session_state:
+    st.session_state.secret_number = random.randint(1, 100)
+if 'attempts' not in st.session_state:
+    st.session_state.attempts = 0
+if 'start_time' not in st.session_state:
+    st.session_state.start_time = time.time()
+if 'game_over' not in st.session_state:
+    st.session_state.game_over = False
+if 'high_scores' not in st.session_state:
+    st.session_state.high_scores = []
 
-col1, col2 = st.columns([1, 3])
-with col1:
-    st.image("https://avatars.githubusercontent.com/u/9919?s=200", width=100, caption="Ảnh đại diện")  # ảnh mẫu
-with col2:
-    st.write("""
-        💼 Vai trò: Backend Developer  
-        🎯 Sở thích: Lập trình, Bảo mật, IoT  
-        📧 Email: khaile@example.com
-    """)
+# ------------------ HEADER ------------------
+st.title("🎮 Game: Đoán số bí mật từ 1 đến 100")
+st.caption("🌟 Bạn có đoán đúng trong ít lượt nhất không?")
 
+player_name = st.text_input("👤 Nhập tên của bạn:", max_chars=20)
+
+# ------------------ GAME PLAY ------------------
+if player_name:
+    if not st.session_state.game_over:
+        guess = st.number_input("🔢 Nhập số bạn đoán (1-100):", min_value=1, max_value=100, step=1)
+        if st.button("🎯 Đoán"):
+            st.session_state.attempts += 1
+            if guess == st.session_state.secret_number:
+                st.success(f"🎉 Chính xác! Số bí mật là {st.session_state.secret_number}.")
+                duration = round(time.time() - st.session_state.start_time, 2)
+                st.info(f"⏱️ Bạn đoán đúng sau {st.session_state.attempts} lần, mất {duration} giây.")
+                st.session_state.game_over = True
+
+                # Lưu điểm cao
+                st.session_state.high_scores.append({
+                    "name": player_name,
+                    "attempts": st.session_state.attempts,
+                    "time": duration
+                })
+
+            elif guess < st.session_state.secret_number:
+                st.warning("📉 Số bạn đoán nhỏ hơn số bí mật!")
+            else:
+                st.warning("📈 Số bạn đoán lớn hơn số bí mật!")
+
+    else:
+        if st.button("🔁 Chơi lại"):
+            st.session_state.secret_number = random.randint(1, 100)
+            st.session_state.attempts = 0
+            st.session_state.start_time = time.time()
+            st.session_state.game_over = False
+
+# ------------------ BẢNG XẾP HẠNG ------------------
+if st.session_state.high_scores:
+    st.markdown("---")
+    st.header("🏆 Bảng xếp hạng người chơi")
+    sorted_scores = sorted(st.session_state.high_scores, key=lambda x: (x['attempts'], x['time']))
+    for idx, score in enumerate(sorted_scores[:5], 1):
+        st.write(f"**#{idx}** - 👤 {score['name']} | 🎯 {score['attempts']} lần | ⏱️ {score['time']} giây")
+
+# ------------------ TUỲ CHỈNH GIAO DIỆN ------------------
 st.markdown("---")
-
-# -------------------- FORM LIÊN HỆ --------------------
-st.header("📩 Liên hệ với tôi")
-with st.form("contact_form"):
-    email = st.text_input("Email của bạn")
-    message = st.text_area("Nội dung phản hồi")
-    submitted = st.form_submit_button("Gửi")
-    if submitted:
-        st.success("✅ Cảm ơn bạn đã liên hệ!")
-
-st.markdown("---")
-
-# -------------------- BIỂU ĐỒ DỮ LIỆU --------------------
-st.header("📊 Dữ liệu thống kê mẫu")
-data = pd.DataFrame(np.random.randn(20, 3), columns=["Doanh thu", "Chi phí", "Lợi nhuận"])
-st.line_chart(data)
-
-st.markdown("---")
-
-# -------------------- ĐỔI MÀU GIAO DIỆN --------------------
-st.header("🎨 Tùy chỉnh màu nền")
-r = st.slider("🔴 Red", 0, 255, 120)
-g = st.slider("🟢 Green", 0, 255, 200)
-b = st.slider("🔵 Blue", 0, 255, 255)
-
+st.header("🎨 Tuỳ chỉnh giao diện")
+bg_color = st.color_picker("Chọn màu nền bạn thích", "#FFFFFF")
 st.markdown(
-    f"<div style='background-color: rgb({r},{g},{b}); height: 60px; border-radius: 10px;'></div>",
+    f"<style>body {{ background-color: {bg_color}; }}</style>",
     unsafe_allow_html=True
 )
 
+# ------------------ GHI CHÚ / PHẢN HỒI ------------------
 st.markdown("---")
-
-# -------------------- GHI CHÚ --------------------
-st.header("📝 Ghi chú cá nhân")
-note = st.text_area("Hôm nay bạn học được gì?")
-if st.button("💾 Lưu ghi chú"):
-    if note.strip():
-        st.success("Ghi chú đã lưu tạm thời!")
-        st.info(note)
+st.header("📝 Góp ý sau khi chơi")
+feedback = st.text_area("Bạn nghĩ gì về trò chơi này?")
+if st.button("📤 Gửi phản hồi"):
+    if feedback.strip():
+        st.success("Cảm ơn bạn đã góp ý ❤️")
     else:
-        st.warning("Bạn chưa nhập gì cả!")
+        st.warning("Vui lòng nhập nội dung phản hồi.")
 
+# ------------------ FOOTER ------------------
 st.markdown("---")
-
-# -------------------- HIỂN THỊ ẢNH --------------------
-st.header("🖼️ Xem ảnh từ liên kết")
-url = st.text_input("🔗 Dán URL ảnh vào đây:")
-if url:
-    try:
-        img = Image.open(BytesIO(requests.get(url).content))
-        st.image(img, caption="Ảnh bạn vừa nhập", use_column_width=True)
-    except:
-        st.error("URL không hợp lệ hoặc không phải là ảnh.")
-
-st.markdown("---")
-
-# -------------------- KHẢO SÁT --------------------
-st.header("🗳️ Khảo sát nhanh")
-language = st.radio("Bạn thích ngôn ngữ lập trình nào nhất?", ["Python", "Java", "C++", "JavaScript"])
-if st.button("📤 Gửi khảo sát"):
-    st.success(f"👍 Bạn đã chọn: {language}")
-
-# -------------------- CHÂN TRANG --------------------
-st.markdown("---")
-st.caption("© 2025 - Thiết kế bởi Khải Lê. Ứng dụng demo bằng Streamlit.")
+st.caption("© 2025 | Xây dựng bởi Khải Lê với ❤️ và Streamlit")
